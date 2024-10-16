@@ -44,10 +44,9 @@ def process_frames(frames):
         frames.pop(0)
         print(f"on frame {i} of {len(frames)}")
     for i, frame in enumerate(frames):
-        print(f"on frame {i}")
+        print(f"on frame {i} and the frame is: {frame} \n now the lenght of the list is {len(frames)}")
         if type(frame) == int:
             frames.pop(0)
-            print(f"pooped {i}")
         else:
             break
     text_capture = "finished"
@@ -88,17 +87,22 @@ def save_frames(capture, frames):
     print(result.isOpened())
     print("Finished save")
     result.release()
-def print_info(capture_info, frames, buffer_size):
 
+def print_info(capture_info, frames, buffer_size):
     info_window = sg.Window("info", layout_info, size= (500,500), finalize=True)
     text_info = f"Info: Tried to buffer {capture_info} frames and {len(frames)} were captured, thats {(len(frames)/buffer_size)*100}%"
     info_window["info"].update(text_info)
+
+def frames_to_file(frames):
+    with open("frames.txt", "w") as file:
+        for i, frame in enumerate(frames):
+            file.write(f"Frame {i}: {frame}\n")
 
 text_capture = "Ready"
 text_info = "Info: "
 layout = [
     [sg.Button("Capture"), sg.Text(text_capture, key="text")],
-    [sg.Button("Show!"), sg.Button("Info")],
+    [sg.Button("Show!"), sg.Button("Info"), sg.Button("frames -> file")],
     [sg.Button("Exit")],
     [sg.Text("currently not working:")],
     [sg.Button("save")]
@@ -129,6 +133,8 @@ while True:
         print_info(frame_count, frames, buffer_size)
     if event == "save":
         save_frames(capture, frames)
+    if event == "frames -> file":
+        frames_to_file(frames)
     if event == "Exit":
         capture.release()
         window.close()
