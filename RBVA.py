@@ -15,7 +15,7 @@ def capture_video(count, capture):
     for i in range(count):
         text_capture = "filling List"
         window["text"].update(text_capture)
-        frames.append("filler")
+        frames.append(0)
 
     while True:
         for i in range(count):
@@ -30,6 +30,7 @@ def capture_video(count, capture):
                 return frames
 
 def process_frames(frames):
+# TODO: overhaul algorithm
     text_capture = "processing frames"
     window["text"].update(text_capture)
     count = 0
@@ -41,6 +42,14 @@ def process_frames(frames):
             break
     for i in range(count+1):
         frames.pop(0)
+        print(f"on frame {i} of {len(frames)}")
+    for i, frame in enumerate(frames):
+        print(f"on frame {i}")
+        if type(frame) == int:
+            frames.pop(0)
+            print(f"pooped {i}")
+        else:
+            break
     text_capture = "finished"
     window["text"].update(text_capture)
 
@@ -79,23 +88,23 @@ def save_frames(capture, frames):
     print(result.isOpened())
     print("Finished save")
     result.release()
-def print_info(capture_info, frames):
-    with open("frames_info.txt", "w") as file:
-        for i, frame in enumerate(frames):
-            if isinstance(frame, np.ndarray):
-                file.write(f"Frame {i}: shape={frame.shape}\n")
-            else:
-                file.write(f"Frame {i}: {frame}\n")
-    #text_info = f"Info: Tried to buffer {capture_info} frames and {} were captured, thats {*100}%"
-    #window["info"].update(text_info)
+def print_info(capture_info, frames, buffer_size):
+
+    info_window = sg.Window("info", layout_info, size= (500,500), finalize=True)
+    text_info = f"Info: Tried to buffer {capture_info} frames and {len(frames)} were captured, thats {(len(frames)/buffer_size)*100}%"
+    info_window["info"].update(text_info)
 
 text_capture = "Ready"
 text_info = "Info: "
 layout = [
     [sg.Button("Capture"), sg.Text(text_capture, key="text")],
     [sg.Button("Show!"), sg.Button("Info")],
-    [sg.Button("save"), sg.Text(text_info, key="info")],
-    [sg.Button("Exit")]
+    [sg.Button("Exit")],
+    [sg.Text("currently not working:")],
+    [sg.Button("save")]
+]
+layout_info = [
+    [sg.Text(text_info, key = "info")]
 ]
 
 window = sg.Window("help", layout, size=(400, 450))
@@ -105,19 +114,19 @@ capture = cv.VideoCapture(0)
 print("Ready")
 
 
-
+buffer_size = 200
 while True:
     event, values = window.read()
     print(event, values)
     if event == "Capture":
-        frame_count, frames = capture_process(1200, capture_video, process_frames)
+        frame_count, frames = capture_process(buffer_size, capture_video, process_frames)
     if event == "Show!":
         try:
             show_frames(frames)
         except:
             print("no frames")
     if event == "Info":
-        print_info(frame_count, frames)
+        print_info(frame_count, frames, buffer_size)
     if event == "save":
         save_frames(capture, frames)
     if event == "Exit":
